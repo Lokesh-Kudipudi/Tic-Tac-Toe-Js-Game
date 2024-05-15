@@ -37,11 +37,58 @@ function validClick(box) {
   return Boolean(!box.firstChild);
 }
 
+function getComputerMove(surroundingIndices) {
+  let randomIndex, rowComp, colComp;
+  do {
+    randomIndex = Math.floor(
+      Math.random() * surroundingIndices.length
+    );
+    rowComp = surroundingIndices[randomIndex][0];
+    colComp = surroundingIndices[randomIndex][1];
+  } while (moveMatrix[rowComp][colComp] != 0);
+  return [rowComp, colComp];
+}
+
+function getSurroundingIndices(matrix, row, col) {
+  const rows = matrix.length;
+  const cols = matrix[0].length;
+
+  // Possible directions (up, down, left, right, and diagonals)
+  const directions = [
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, -1],
+    [0, 1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ];
+
+  const surroundingIndices = [];
+
+  directions.forEach((direction) => {
+    const [dr, dc] = direction;
+    const newRow = row + dr;
+    const newCol = col + dc;
+
+    if (
+      newRow >= 0 &&
+      newRow < rows &&
+      newCol >= 0 &&
+      newCol < cols
+    ) {
+      surroundingIndices.push([newRow, newCol]);
+    }
+  });
+
+  return surroundingIndices;
+}
+
 boxes.forEach((box) => {
   box.addEventListener("click", function () {
     if (!validClick(box)) return;
     if (checkWin(moveMatrix, playerMap[currentPlayer])) return;
-
     appendSpan(box);
 
     let [row, col] = box.id.split("-").map(Number);
@@ -58,12 +105,12 @@ boxes.forEach((box) => {
     }
     switchCurrentPlayer();
 
-    let random, rowComp, colComp;
-    do {
-      random = randomBox();
-      rowComp = Math.floor(random / 3);
-      colComp = random % 3;
-    } while (moveMatrix[rowComp][colComp] != 0);
+    let surroundingIndices = getSurroundingIndices(
+      moveMatrix,
+      row,
+      col
+    );
+    let [rowComp, colComp] = getComputerMove(surroundingIndices);
 
     appendSpan(document.getElementById(`${rowComp}-${colComp}`));
     moveMatrix[rowComp][colComp] = playerMap[currentPlayer];
